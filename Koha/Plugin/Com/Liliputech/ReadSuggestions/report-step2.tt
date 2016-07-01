@@ -1,0 +1,35 @@
+[% INCLUDE 'doc-head-open.inc' %]
+ <title>Koha: Read Suggestions</title>
+[% INCLUDE 'doc-head-close.inc' %]
+</head>
+<body>
+[% INCLUDE 'header.inc' %]
+[% INCLUDE 'cat-search.inc' %]
+
+<div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Home</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl">Plugins</a> &rsaquo; Read Suggestions &rsaquo;</div>
+
+<div id="doc3">
+<h5>Read Suggestions List</h5>
+Borrowers who issued [% biblionumber %] also issued : <br>
+<br>
+<table border=1>
+  <thead>
+    <tr> 
+      <th>BiblioNumber</th>
+      <th>Title</th>
+      <th>Number of issues</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    [% FOREACH r IN results %]
+      <tr>
+        <td>[% r.biblionumber %]</td>
+        <td>[% r.title %]</td>
+        <td>[% r.nissues %]</td>
+      </tr>
+    [% END %]
+  </tbody>
+</table> 
+
+[% INCLUDE 'intranet-bottom.inc' %]
