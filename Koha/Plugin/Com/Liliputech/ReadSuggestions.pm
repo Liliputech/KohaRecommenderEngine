@@ -75,16 +75,6 @@ sub report_step1 {
     print $template->output();
 }
 
-sub report_step2_test {
-    my ( $self, $args ) = @_;
-    my $cgi = $self->{'cgi'};
-
-    my $template = $self->get_template({ file => 'report-step1.tt' });
-
-    print $cgi->header();
-    print $template->output();
-}
-
 sub report_step2 {
     my ( $self, $args ) = @_;
     my $cgi = $self->{'cgi'};
@@ -109,6 +99,7 @@ sub report_step2 {
 		) group by itemnumber
 	) exemplaires on items.itemnumber=exemplaires.itemnumber
 	where biblioitemnumber <> '$biblionumber'
+    and items.statisticvalue in (select distinct statisticvalue from items where biblioitemnumber = '$biblionumber')
 	group by biblioitemnumber
 	order by totalPrets desc
 	limit 10) suggestions
