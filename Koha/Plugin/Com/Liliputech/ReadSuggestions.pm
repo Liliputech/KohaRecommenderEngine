@@ -81,7 +81,9 @@ sub report_step2 {
 
     my $dbh = C4::Context->dbh;
 
-    my $biblionumber = scalar $cgi->param('biblionumber');
+    my $biblionumber = scalar $cgi->param('biblionumber'); ##Biblionumber to query
+    if( exists $cgi->param('recordnumber')) my $recordnumber = scalar $cgi->param('recordnumber'); ##Number of results to display 
+    else my $recordnumber = 10; ##Default to 10 records
 
     ##Query ok for UNIMARC Format (200a), this has to be changed in configuration if another cataloging format is to be used.
     my $query = "
@@ -102,7 +104,7 @@ sub report_step2 {
     and items.statisticvalue in (select distinct statisticvalue from items where biblioitemnumber = '$biblionumber')
 	group by biblioitemnumber
 	order by totalPrets desc
-	limit 10) suggestions
+	limit $recordnumber) suggestions
 	on biblioitems.biblioitemnumber=suggestions.biblioitemnumber";
 
     my $sth = $dbh->prepare($query);

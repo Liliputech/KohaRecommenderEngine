@@ -17,10 +17,9 @@
                 <input type="hidden" name="method" value="[% METHOD %]"/>
 
 		<label for="biblionumber">Type in a biblionumber:</label>
-		<input type=text name="biblionumber"></input>
-
-		<br/><br/>
-
+		<input type=text name="biblionumber"></input><br>
+		<label for="recordnumber">Type in the number of records you want to get:</label>
+		<input type=text name="recordnumber"></input><br>
 		<input type="submit" value="Run Report" />
 
 	</form>
