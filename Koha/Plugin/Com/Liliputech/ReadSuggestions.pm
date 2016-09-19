@@ -22,7 +22,7 @@ our $metadata = {
     author => 'Arthur O Suzuki',
     description => 'This plugin implements read suggestions for each Bibliographic reference based on all other borrowers old issues',
     date_authored   => '2016-06-27',
-    date_updated    => '2016-06-27',
+    date_updated    => '2016-09-14',
     minimum_version => '3.18.13.000',
     maximum_version => undef,
     version         => $VERSION,
@@ -80,14 +80,47 @@ sub report_step2 {
     my $cgi = $self->{'cgi'};
 
     my $dbh = C4::Context->dbh;
+ 
+    ##Biblionumber to query
+    my $biblionumber = scalar $cgi->param('biblionumber');
 
-    my $biblionumber = scalar $cgi->param('biblionumber'); ##Biblionumber to query
-    if( exists $cgi->param('recordnumber')) my $recordnumber = scalar $cgi->param('recordnumber'); ##Number of results to display 
-    else my $recordnumber = 10; ##Default to 10 records
+	##Eventually set a limit to the number of results to display
+	my $limit = "";
+	my $recordnumber = scalar $cgi->param('recordnumber');
+	if($recordnumber) {
+		$limit = "limit $recordnumber";
+	}
+    
+	##Choose how to output data (set to html if undefined)
+	my $template;
+	my $output = scalar $cgi->param('output');
+	if ($output eq 'csv') {
+		$template = $self->get_template({ file => 'report-step2-csv.tt' });
+		print "Content-type: text/plain\n\n";
+	} else {
+        $template = $self->get_template({ file => 'report-step2.tt' });
+	    print "Content-type: text/html\n\n";
+    }
 
+	## First fetch value if UNIMARC or MARC21
+    my $query = "select value from systempreferences where variable='marcflavour'";
+    my $sth = $dbh->prepare($query);
+    $sth->execute();
+    my $marcflavour = ${$dbh->selectcol_arrayref($query)}[0];
+    
+    ## Create ExtractValue query according to MARC format
+    my $marcfilter;
+	if ($marcflavour eq 'UNIMARC') {
+        $marcfilter = "ExtractValue(marcxml,'//datafield[\@tag=\"200\"]/subfield[\@code=\"a\"]')";
+	} elsif ($marcflavour eq 'MARC21') {
+        $marcfilter = "ExtractValue(marcxml,'//datafield[\@tag=\"245\"]/subfield[\@code=\"a\"]')";
+    }
+    
+    ## Wow such a big shit...
     ##Query ok for UNIMARC Format (200a), this has to be changed in configuration if another cataloging format is to be used.
-    my $query = "
-	select suggestions.biblioitemnumber as biblionumber, ExtractValue(marcxml,'//datafield[\@tag=\"200\"]/subfield[\@code=\"a\"]') AS title, totalPrets as nissues from biblioitems
+
+    $query = "
+	select suggestions.biblioitemnumber as biblionumber, $marcfilter AS title, totalPrets as nissues from biblioitems
 	inner join (
 	select distinct biblioitemnumber, sum(pretExemplaire) totalPrets from items inner join (
 		select distinct itemnumber, count(itemnumber) pretExemplaire from old_issues
@@ -104,25 +137,22 @@ sub report_step2 {
     and items.statisticvalue in (select distinct statisticvalue from items where biblioitemnumber = '$biblionumber')
 	group by biblioitemnumber
 	order by totalPrets desc
-	limit $recordnumber) suggestions
+	$limit) suggestions
 	on biblioitems.biblioitemnumber=suggestions.biblioitemnumber";
 
-    my $sth = $dbh->prepare($query);
+    $sth = $dbh->prepare($query);
     $sth->execute();
 
     my @results;
     while ( my $row = $sth->fetchrow_hashref() ) {
         push( @results, $row );
     }
-
-    my $template = $self->get_template({ file => 'report-step2.tt' });
-    
+ 
     $template->param(
 		biblionumber => $biblionumber,
         results => \@results
     );
 
-    print "Content-type: text/html\n\n";
     print $template->output();
 }
 1;

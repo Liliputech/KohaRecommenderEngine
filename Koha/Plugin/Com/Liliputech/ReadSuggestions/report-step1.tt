@@ -15,12 +15,27 @@
 	<form method="get">
                 <input type="hidden" name="class" value="[% CLASS %]"/>
                 <input type="hidden" name="method" value="[% METHOD %]"/>
+		<table>
+		<tr>
+		<td><label for="biblionumber">Type in a biblionumber:</label></td>
+		<td><input type=text name="biblionumber"></input></td>
+		</tr>
 
-		<label for="biblionumber">Type in a biblionumber:</label>
-		<input type=text name="biblionumber"></input><br>
-		<label for="recordnumber">Type in the number of records you want to get:</label>
-		<input type=text name="recordnumber"></input><br>
-		<input type="submit" value="Run Report" />
+		<tr>
+		<td><label for="recordnumber">Type in the number of records you want to get:</label></td>
+		<td><input type=text name="recordnumber"></input><br></td>
+		</tr>
+		<tr>
+		<td><label for="output">Select output format:</label></td>
+		<td>
+            <select name="output">
+                <option value="html" selected>HTML</option>
+                <option value="csv">CSV</option>
+            </select>
+        </td>
+		</tr>
+        </table>
+        <input type="submit" value="Run Report" />
 
 	</form>
 
