@@ -16,6 +16,6 @@ You'll then be rewarded by a list of references which were top issued by patrons
 Also results are filtered by their "statisticvalue" because we use this in my Library to fill in subject details (Geography, History, Social Science, etc...) <br>
 
 ## To Do
--Integrate into Opac<br>
+-Integrate into Opac (in progress!)<br>
 -Fasten/Optimize query<br>
 -Any other idea is welcome<br>
