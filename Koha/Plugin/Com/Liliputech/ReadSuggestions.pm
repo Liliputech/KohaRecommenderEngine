@@ -136,7 +136,7 @@ sub report_step2 {
 	where biblioitemnumber <> '$biblionumber'
     and items.statisticvalue in (select distinct statisticvalue from items where biblioitemnumber = '$biblionumber')
 	group by biblioitemnumber
-	order by totalPrets desc
+	order by totalPrets desc, Rand()
 	$limit) suggestions
 	on biblioitems.biblioitemnumber=suggestions.biblioitemnumber";
 
