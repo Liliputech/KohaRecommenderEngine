@@ -1,4 +1,4 @@
-package Koha::Plugin::Com::Liliputech::ReadSuggestions;
+package Koha::Plugin::Com::Liliputech::RecommenderEngine;
 
 ## It's good practive to use Modern::Perl
 use Modern::Perl;
@@ -20,7 +20,7 @@ our $VERSION = 1.00;
 our $metadata = {
     name   => 'Read Suggestions Plugin',
     author => 'Arthur O Suzuki',
-    description => 'This plugin implements read suggestions for each Bibliographic reference based on all other borrowers old issues',
+    description => 'This plugin implements recommendations for each Bibliographic reference based on all other borrowers old issues',
     date_authored   => '2016-06-27',
     date_updated    => '2016-09-14',
     minimum_version => '3.18.13.000',
@@ -115,6 +115,10 @@ sub report_step2 {
 	} elsif ($marcflavour eq 'MARC21') {
         $marcfilter = "ExtractValue(marcxml,'//datafield[\@tag=\"245\"]/subfield[\@code=\"a\"]')";
     }
+
+    my $contentfilter = "";
+    #Could be like this :
+    #my $contentfilter = "and items.statisticvalue in (select distinct statisticvalue from items where biblioitemnumber = '$biblionumber')";
     
     ## Wow such a big shit...
     ##Query ok for UNIMARC Format (200a), this has to be changed in configuration if another cataloging format is to be used.
@@ -134,7 +138,7 @@ sub report_step2 {
 		) group by itemnumber
 	) exemplaires on items.itemnumber=exemplaires.itemnumber
 	where biblioitemnumber <> '$biblionumber'
-    and items.statisticvalue in (select distinct statisticvalue from items where biblioitemnumber = '$biblionumber')
+	$contentfilter
 	group by biblioitemnumber
 	order by totalPrets desc, Rand()
 	$limit) suggestions
@@ -149,7 +153,7 @@ sub report_step2 {
     }
  
     $template->param(
-		biblionumber => $biblionumber,
+	biblionumber => $biblionumber,
         results => \@results
     );
 

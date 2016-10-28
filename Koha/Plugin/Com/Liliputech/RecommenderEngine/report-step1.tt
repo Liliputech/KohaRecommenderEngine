@@ -1,15 +1,15 @@
 [% INCLUDE 'doc-head-open.inc' %]
- <title>Koha: Read Suggestions Plugin</title>
+ <title>Koha: Recommendations</title>
 [% INCLUDE 'doc-head-close.inc' %]
 </head>
 <body>
 [% INCLUDE 'header.inc' %]
 [% INCLUDE 'cat-search.inc' %]
 
-<div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Home</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl">Plugins</a> &rsaquo; Read Suggestions &rsaquo;</div>
+<div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Home</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl">Plugins</a> &rsaquo; Recommendations &rsaquo;</div>
 
 <div id="doc3">
-	<h3>Generate a list of Read Suggestions</h3>
+	<h3>Generate a list of Recommendations</h3>
 
         <!-- Notice our form here has no 'action', this is good, it means that our forms will always get passed back to 'plugins/run.pl'. You could hard code it instead if you prefer -->
 	<form method="get">
