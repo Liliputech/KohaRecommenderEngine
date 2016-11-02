@@ -18,7 +18,7 @@ our $VERSION = 1.00;
 
 ## Here is our metadata, some keys are required, some are optional
 our $metadata = {
-    name   => 'Read Suggestions Plugin',
+    name   => 'Koha Recommender Plugin',
     author => 'Arthur O Suzuki',
     description => 'This plugin implements recommendations for each Bibliographic reference based on all other borrowers old issues',
     date_authored   => '2016-06-27',
@@ -47,20 +47,6 @@ sub new {
 
 sub install() {
     my ( $self, $args ) = @_;
-    my $opacuserjs = C4::Context->preference('opacuserjs');
-    $opacuserjs =~ s/\n\/\* JS for Koha Recommender Plugin.*End of JS for Koha Recommender Plugin \*\///gs;
-
-    my $template = $self->get_template( { file => 'opacuserjs.tt' } );
-    my $recommender_js = $template->output();
-
-    $recommender_js = qq|\n/* JS for Koha Recommender Plugin 
-   This JS was added automatically by installing the Recommender plugin
-   Please do not modify */\n|
-      . $recommender_js
-      . q|/* End of JS for Koha Recommender Plugin */|;
-
-    $opacuserjs .= $recommender_js;
-    C4::Context->set_preference( 'opacuserjs', $opacuserjs );
     return 1;
 }
 
@@ -76,6 +62,27 @@ sub uninstall() {
     C4::Context->set_preference( 'opacuserjs', $opacuserjs );
 }
 
+sub configure() {
+    my ( $self, $args ) = @_;
+    my $cgi = $self->{'cgi'};
+
+    my $opacuserjs = C4::Context->preference('opacuserjs');
+    $opacuserjs =~ s/\n\/\* JS for Koha Recommender Plugin.*End of JS for Koha Recommender Plugin \*\///gs;
+
+    my $template = $self->get_template( { file => 'opacuserjs.tt' } );
+    my $recommender_js = $template->output();
+
+    $recommender_js = qq|\n/* JS for Koha Recommender Plugin 
+   This JS was added automatically by installing the Recommender plugin
+   Please do not modify */\n|
+      . $recommender_js
+      . q|/* End of JS for Koha Recommender Plugin */|;
+
+    $opacuserjs .= $recommender_js;
+    C4::Context->set_preference( 'opacuserjs', $opacuserjs );
+    $self->go_home();
+    return 1;
+}
 ## The existance of a 'report' subroutine means the plugin is capable
 ## of running a report. This example report can output a list of patrons
 ## either as HTML or as a CSV file. Technically, you could put all your code

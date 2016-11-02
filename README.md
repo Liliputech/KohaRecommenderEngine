@@ -26,6 +26,12 @@ Then check in Koha Administration panel, search for the UseKohaPlugins variable,
 Finally go to the Reports panel and click on "Report Plugins".<br>
 On the top left corner you'll see an "Upload a plugin" link, which will enable you to install the KPZ file.<br>
 
+## Integration to OPAC
+To document...
+
+```
+```
+
 ## How to use
 Easy! Click on "Run report" and type in a biblionumber.<br>
 You'll then be rewarded by a list of references which were top issued by patrons.<br>
@@ -34,3 +40,7 @@ You'll then be rewarded by a list of references which were top issued by patrons
 -Integrate into Opac (in progress!)<br>
 -Fasten/Optimize query<br>
 -Any other idea is welcome<br>
+
+## Greetings
+- Mr Kyle Hall who developped Koha Plugin functionnality and provided the community with running examples.
+- Lyon 3 Koha Team for their "knowledge sharing" values and for giving me the necessary pre-requisite for having fun while coding in Perl and JS.
