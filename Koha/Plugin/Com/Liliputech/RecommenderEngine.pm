@@ -22,7 +22,7 @@ our $metadata = {
     author => 'Arthur O Suzuki',
     description => 'This plugin implements recommendations for each Bibliographic reference based on all other borrowers old issues',
     date_authored   => '2016-06-27',
-    date_updated    => '2016-09-14',
+    date_updated    => '2016-11-02',
     minimum_version => '3.18.13.000',
     maximum_version => undef,
     version         => $VERSION,
@@ -43,6 +43,37 @@ sub new {
     my $self = $class->SUPER::new($args);
 
     return $self;
+}
+
+sub install() {
+    my ( $self, $args ) = @_;
+    my $opacuserjs = C4::Context->preference('opacuserjs');
+    $opacuserjs =~ s/\n\/\* JS for Koha Recommender Plugin.*End of JS for Koha Recommender Plugin \*\///gs;
+
+    my $template = $self->get_template( { file => 'opacuserjs.tt' } );
+
+    my $recommender_js = $template->output();
+
+    $recommender_js = qq|\n/* JS for Koha Recommender Plugin 
+   This JS was added automatically by installing the Recommender plugin
+   Please do not modify */|
+      . $recommender_js
+      . q|/* End of JS for Koha CoverFlow Plugin */|;
+
+    $opacuserjs .= $recommender_js;
+    C4::Context->set_preference( 'opacuserjs', $opacuserjs );
+}
+
+## This method will be run just before the plugin files are deleted
+## when a plugin is uninstalled. It is good practice to clean up
+## after ourselves!
+sub uninstall() {
+    my ( $self, $args ) = @_;
+
+    # Removing Plugin JS from Syspref
+    my $opacuserjs = C4::Context->preference('opacuserjs');
+    $opacuserjs =~ s/\n\/\* JS for Koha Recommender Plugin.*End of JS for Koha Recommender Plugin \*\///gs;
+    C4::Context->set_preference( 'opacuserjs', $opacuserjs );
 }
 
 ## The existance of a 'report' subroutine means the plugin is capable
@@ -96,8 +127,13 @@ sub report_step2 {
 	my $output = scalar $cgi->param('output');
 	if ($output eq 'csv') {
 		$template = $self->get_template({ file => 'report-step2-csv.tt' });
-		print "Content-type: text/plain\n\n";
-	} else {
+		print "Content-type: text/csv\n\n";
+	}
+	elsif ($output eq 'json') {
+		$template = $self->get_template({ file => 'report-step2-json.tt' });
+		print "Content-type: application/json\n\n";
+	}
+	else {
         $template = $self->get_template({ file => 'report-step2.tt' });
 	    print "Content-type: text/html\n\n";
     }
