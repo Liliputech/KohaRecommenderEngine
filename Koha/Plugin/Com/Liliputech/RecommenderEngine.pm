@@ -51,17 +51,17 @@ sub install() {
     $opacuserjs =~ s/\n\/\* JS for Koha Recommender Plugin.*End of JS for Koha Recommender Plugin \*\///gs;
 
     my $template = $self->get_template( { file => 'opacuserjs.tt' } );
-
     my $recommender_js = $template->output();
 
     $recommender_js = qq|\n/* JS for Koha Recommender Plugin 
    This JS was added automatically by installing the Recommender plugin
-   Please do not modify */|
+   Please do not modify */\n|
       . $recommender_js
-      . q|/* End of JS for Koha CoverFlow Plugin */|;
+      . q|/* End of JS for Koha Recommender Plugin */|;
 
     $opacuserjs .= $recommender_js;
     C4::Context->set_preference( 'opacuserjs', $opacuserjs );
+    return 1;
 }
 
 ## This method will be run just before the plugin files are deleted
