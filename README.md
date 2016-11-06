@@ -62,7 +62,7 @@ You'll then be rewarded by a list of references which were top issued by patrons
 - Any other idea is welcome<br>
 
 ## Greetings
-- Mr Kyle Hall who developped Koha Plugin functionnality and provided the community with running examples.
+- Kyle Hall who developped Koha Plugin functionnality and provided the community with running examples.
 - Lyon 3 Koha Team for their "knowledge sharing" values and for giving me the necessary pre-requisite for having fun while coding in Perl and JS.
 
 # FR - KohaRecommenderEngine
@@ -96,10 +96,10 @@ Pour finir, aller dans la partie "Rapports" et cliquez sur le lien "Plugins de r
 Dans le coin supérieur gauche vous devriez alors voir un lien "Téléverser un plugin" ou "Upload a plugin", qui vous permettra d'installer le fichier ".KPZ".<br>
 
 ## Integration à l'OPAC
-Après l'installation du plugin, il suffit de cliquer sur "configurer" pour qu'un code Javascript qui permet d'intégrer les recommendations sur l'OPAC soit ajouté à la syspref "OpacUserJS".
-Ce code est automatiquement supprimé lorsque le plugin est désinstallé.
-Une étape supplémentaire est nécessaire au fonctionnement du plugin, il faut ajouter les lignes suivantes à la configuration de votre serveur Apache (probablement dans le fichier koha-httpd.conf).
-N'oubliez pas d'éditer les chemins présents dans l'exemple conformément à votre installation de Koha.
+Après l'installation du plugin, il suffit de cliquer sur "configurer" pour qu'un code Javascript qui permet d'intégrer les recommendations sur l'OPAC soit ajouté à la syspref "OpacUserJS".<br>
+Ce code est automatiquement supprimé lorsque le plugin est désinstallé.<br>
+Une étape supplémentaire est nécessaire au fonctionnement du plugin, il faut ajouter les lignes suivantes à la configuration de votre serveur Apache (probablement dans le fichier koha-httpd.conf).<br>
+N'oubliez pas d'éditer les chemins présents dans l'exemple conformément à votre installation de Koha.<br>
 
 ```
   ScriptAlias /recommendations.pl "/home/koha/var/lib/plugins/Koha/Plugin/Com/Liliputech/RecommenderEngine/recommendations.pl"
@@ -115,20 +115,13 @@ N'oubliez pas d'éditer les chemins présents dans l'exemple conformément à vo
 Si tout s'est pasé correctement vous devriez obtenir un nouvel onglet à la suite de l'onglet "Commentaires" sur la page opac-detail:
 ![Opac Details Recommendation](opac-detail-screenshot.png)
 
-(translation in progress...)
-
-## How to use
-If you have not integrated to Opac you could still use the plugin to generate lists of recommendations.
-Easy! Click on "Run report" and type in a biblionumber.<br>
-You'll then be rewarded by a list of references which were top issued by patrons.<br>
-
 ## To Do
--Fasten/Optimize query<br>
--Develop some configuration options<br>
--Enable handling of "Content-Based Filtering" techniques<br>
--Improve UI.<br>
--Any other idea is welcome<br>
+- Optimiser la requète SQL<br>
+- Ajouter des options de configurations<br>
+- Permettre la prise en charge de filtres de contenus<br>
+- Améliorer l'interface utilisateur.<br>
+- Toutes les idées sont les bienvenues!<br>
 
-## Greetings
-- Mr Kyle Hall who developped Koha Plugin functionnality and provided the community with running examples.
-- Lyon 3 Koha Team for their "knowledge sharing" values and for giving me the necessary pre-requisite for having fun while coding in Perl and JS.
+## Remerciements
+- Kyle Hall pour le développement des Plugins et les exemples fournis à la communauté.
+- l'équipe Koha de l'Université Lyon 3 pour sa valorisation du partage des connaissances et pour m'avoir donné les prérequis nécessaires en Perl, JS et SQL.
