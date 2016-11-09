@@ -2,6 +2,7 @@
 
 This Koha Plugin is an attempt at creating a "crowd-sourced" recommendation engine.<br>
 At the time of writing it is a collaborative-filtering based recommender system.<br>
+Caution : Only issues less than one year old are took into account.<br>
 Similar references are linked to each others by patron issues.<br>
 It can easily be extended to support content based filters as well (have a look at the code).<br>
 
@@ -70,6 +71,7 @@ You'll then be rewarded by a list of references which were top issued by patrons
 Ce plugin est une tentative d'implémentation d'un système de recommendation.<br>
 Actuellement c'est un système assez basique de "Filtre Collaboratif".<br>
 Les références bibliographiques sont liées les unes aux autres par les emprunts des usagers.<br>
+Attention, seuls les emprunts datant de moins d'un an sont pris en comptes.<br>
 Le code peut facilement être étendu pour prendre également en charge des filtres basés sur le contenu.<br>
 
 ## Comment ça marche?
