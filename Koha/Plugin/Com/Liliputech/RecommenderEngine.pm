@@ -172,6 +172,7 @@ sub report_step2 {
 	select distinct biblioitemnumber, sum(pretExemplaire) totalPrets from items inner join (
 		select distinct itemnumber, count(itemnumber) pretExemplaire from old_issues
 		where
+		issuedate > DATE_SUB(NOW(),INTERVAL 1 YEAR) and
 		itemnumber is not null and borrowernumber is not null and
 		borrowernumber in (
 			select distinct borrowernumber from old_issues
