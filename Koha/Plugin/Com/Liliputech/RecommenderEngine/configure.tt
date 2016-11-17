@@ -1,0 +1,41 @@
+[% INCLUDE 'doc-head-open.inc' %]
+<title>Koha: Recommender Plugin: Configuration</title>
+[% INCLUDE 'doc-head-close.inc' %]
+
+<script type="text/javascript">
+$(document).ready(function() {
+        $("#coverlinks").change(function() {
+                if ( $(this).prop("checked") ){
+                $("#showtitle").prop("disabled",false);
+                }
+                else {
+                $("#showtitle").prop("disabled",true);
+                }
+                });
+        });
+
+</script>
+
+</head>
+<body>
+[% INCLUDE 'header.inc' %]
+[% INCLUDE 'cat-search.inc' %]
+
+<div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Home</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl">Plugins</a> &rsaquo; Cover Flow &rsaquo; Configuration</div>
+
+<div id="doc3">
+<h3>Koha: Recommender Plugin: Configuration</h3>
+<!-- Notice our form here has no 'action', this is good, it means that our forms will always get passed back to 'plugins/run.pl'. You could hard code it instead if you prefer -->
+<form method="get">
+<!-- Always pass these two parameters so the plugin system knows what to execute! -->
+<input type="hidden" name="class" value="[% CLASS %]"/>
+<input type="hidden" name="method" value="[% METHOD %]"/>
+<input type="hidden" name="save" value="1" />
+
+Type in the number of recommendations you want to show to the user on Opac: <input type="text" name="recordnumber" value="[% recordnumber %]" /><br>
+Type here some SQL to select which past period to analyse (1 YEAR, 1 MONTH, 7 DAY, 52 WEEK, etc...): <input type="text" name="interval" value="[% interval %]" /><br>
+
+<input type="submit" value="Save configuration" />
+</form>
+
+[% INCLUDE 'intranet-bottom.inc' %]
