@@ -66,10 +66,46 @@ sub configure() {
     my ( $self, $args ) = @_;
     my $cgi = $self->{'cgi'};
 
+    unless ( $cgi->param('save') ) {
+        my $template = $self->get_template( { file => 'configure.tt' } );
+
+        ## Grab the values we already have for our settings, if any exist
+        $template->param( recordnumber => $self->retrieve_data('recordnumber'), interval => $self->retrieve_data('interval'), last_configured_by => $self->retrieve_data('last_configured_by'), );
+
+        print $cgi->header(
+                {
+                -type     => 'text/html',
+                -charset  => 'UTF-8',
+                -encoding => "UTF-8"
+                }
+                );
+        print $template->output();
+    }
+
+    else {
+        my $recordnumber = $cgi->param('recordnumber');
+        my $interval = $cgi->param('interval');
+        $self->store_data(
+            {
+                recordnumber => $recordnumber,
+                interval => $interval,
+                last_configured_by => C4::Context->userenv->{'number'},
+            }
+        );
+        $self->updateJS($recordnumber);
+        $self->go_home();
+    }
+    return 1;
+}
+
+sub updateJS() {
+    my ($self, $recordnumber) = @_;
+
     my $opacuserjs = C4::Context->preference('opacuserjs');
     $opacuserjs =~ s/\n\/\* JS for Koha Recommender Plugin.*End of JS for Koha Recommender Plugin \*\///gs;
 
     my $template = $self->get_template( { file => 'opacuserjs.tt' } );
+    $template->param( 'recordnumber' => $recordnumber );
     my $recommender_js = $template->output();
 
     $recommender_js = qq|\n/* JS for Koha Recommender Plugin 
@@ -80,9 +116,8 @@ sub configure() {
 
     $opacuserjs .= $recommender_js;
     C4::Context->set_preference( 'opacuserjs', $opacuserjs );
-    $self->go_home();
-    return 1;
 }
+
 ## The existance of a 'report' subroutine means the plugin is capable
 ## of running a report. This example report can output a list of patrons
 ## either as HTML or as a CSV file. Technically, you could put all your code
@@ -145,7 +180,9 @@ sub report_step2 {
 	    print "Content-type: text/html\n\n";
     }
 
-	## First fetch value if UNIMARC or MARC21
+    ## Get Interval to analyse
+    my $interval = $self->retrieve_data('interval');	
+    ## First fetch value if UNIMARC or MARC21
     my $query = "select value from systempreferences where variable='marcflavour'";
     my $sth = $dbh->prepare($query);
     $sth->execute();
@@ -172,7 +209,7 @@ sub report_step2 {
 	select distinct biblioitemnumber, sum(pretExemplaire) totalPrets from items inner join (
 		select distinct itemnumber, count(itemnumber) pretExemplaire from old_issues
 		where
-		issuedate > DATE_SUB(NOW(),INTERVAL 1 YEAR) and
+		issuedate > DATE_SUB(NOW(),INTERVAL $interval) and
 		itemnumber is not null and borrowernumber is not null and
 		borrowernumber in (
 			select distinct borrowernumber from old_issues

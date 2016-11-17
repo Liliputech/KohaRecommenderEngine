@@ -7,7 +7,7 @@ $(document).ready(function() {
 function detailRecommendations() {
 	//Get the biblionumber from URL
 	var biblionumber = location.search.split('biblionumber=')[1]		
-		var recordnumber = 10;
+	var recordnumber = [% recordnumber %];
 	var recommendations = "\
 			       <div id='recommendations'>\
 			       <table id='recommendationTable' class='table table-bordered table-striped dataTable no-footer' width='100%' cellspacing='0'>\
@@ -21,7 +21,7 @@ function detailRecommendations() {
 			       </div>";
 
 	$('div#bibliodescriptions').first().append(recommendations);
-	$("#bibliodescriptions").tabs("add", "#recommendations", "Recommendations");
+	$("#bibliodescriptions").tabs("add", "#recommendations", "Also issued");
 
 	$('#recommendationTable').DataTable( {
 			"ajax": "http://"+location.hostname+"/recommendations.pl?output=json&recordnumber="+recordnumber+"&biblionumber="+biblionumber,
