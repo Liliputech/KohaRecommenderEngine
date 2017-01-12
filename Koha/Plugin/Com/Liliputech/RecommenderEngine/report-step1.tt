@@ -21,10 +21,10 @@
 		<td><input type=text name="biblionumber"></input></td>
 		</tr>
 
-		<tr>
+		<!--<tr>
 		<td><label for="recordnumber">Type in the number of records you want to get:</label></td>
 		<td><input type=text name="recordnumber"></input><br></td>
-		</tr>
+		</tr>-->
 		<tr>
 		<td><label for="output">Select output format:</label></td>
 		<td>

@@ -21,7 +21,7 @@ $(document).ready(function() {
 [% INCLUDE 'header.inc' %]
 [% INCLUDE 'cat-search.inc' %]
 
-<div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Home</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl">Plugins</a> &rsaquo; Cover Flow &rsaquo; Configuration</div>
+<div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Home</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl">Plugins</a> &rsaquo; Recommender &rsaquo; Configuration</div>
 
 <div id="doc3">
 <h3>Koha: Recommender Plugin: Configuration</h3>
@@ -32,8 +32,11 @@ $(document).ready(function() {
 <input type="hidden" name="method" value="[% METHOD %]"/>
 <input type="hidden" name="save" value="1" />
 
-Type in the number of recommendations you want to show to the user on Opac: <input type="text" name="recordnumber" value="[% recordnumber %]" /><br>
-Type here some SQL to select which past period to analyse (1 YEAR, 1 MONTH, 7 DAY, 52 WEEK, etc...): <input type="text" name="interval" value="[% interval %]" /><br>
+<table>
+<tr><td>Should recommendations be displayed on Opac?</td><td><input type="checkbox" name="opacenabled" value="1" [% IF (opacenabled) %] checked [% END %]/></td></tr>
+<tr><td>Type in the number of recommendations to compute (less records gives faster results)</td><td><input type="text" name="recordnumber" value="[% recordnumber %]" /></td></tr>
+<tr><td>Type here the number of past years you want to analyse (less than a year gives non-relevant results)</td><td><input type="text" name="interval" value="[% interval %]" /></td></tr>
+</table>
 
 <input type="submit" value="Save configuration" />
 </form>

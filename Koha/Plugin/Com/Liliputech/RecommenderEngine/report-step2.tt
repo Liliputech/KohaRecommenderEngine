@@ -24,7 +24,7 @@ Borrowers who issued [% biblionumber %] also issued : <br>
   <tbody>
     [% FOREACH r IN results %]
       <tr>
-        <td><a target="_blank" href="opac-detail.pl?biblionumber=[% r.biblionumber %]">[% r.biblionumber %]</a></td>
+        <td><a target="_blank" href="../catalogue/detail.pl?biblionumber=[% r.biblionumber %]">[% r.biblionumber %]</a></td>
         <td>[% r.title %]</td>
         <td>[% r.nissues %]</td>
       </tr>

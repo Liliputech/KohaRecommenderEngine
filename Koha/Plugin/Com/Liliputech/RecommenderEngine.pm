@@ -14,7 +14,7 @@ use C4::Members;
 use C4::Auth;
 
 ## Here we set our plugin version
-our $VERSION = 1.00;
+our $VERSION = 1.1;
 
 ## Here is our metadata, some keys are required, some are optional
 our $metadata = {
@@ -22,8 +22,8 @@ our $metadata = {
     author => 'Arthur O Suzuki',
     description => 'This plugin implements recommendations for each Bibliographic reference based on all other borrowers old issues',
     date_authored   => '2016-06-27',
-    date_updated    => '2016-11-02',
-    minimum_version => '3.18.13.000',
+    date_updated    => '2017-01-12',
+    minimum_version => '3.16',
     maximum_version => undef,
     version         => $VERSION,
 };
@@ -60,6 +60,15 @@ sub uninstall() {
     my $opacuserjs = C4::Context->preference('opacuserjs');
     $opacuserjs =~ s/\n\/\* JS for Koha Recommender Plugin.*End of JS for Koha Recommender Plugin \*\///gs;
     C4::Context->set_preference( 'opacuserjs', $opacuserjs );
+    my $intranetuserjs = C4::Context->preference('intranetuserjs');
+    $intranetuserjs =~ s/\n\/\* JS for Koha Recommender Plugin.*End of JS for Koha Recommender Plugin \*\///gs;
+    C4::Context->set_preference( 'intranetuserjs', $intranetuserjs );
+
+    # Remove configurations data
+    my $dbh = C4::Context->dbh;
+    my $query = "delete from plugin_data where plugin_class like 'Koha::Plugin::Com::Liliputech::RecommenderEngine'";
+    my $sth = $dbh->prepare($query);
+    $sth->execute();
 }
 
 sub configure() {
@@ -70,7 +79,7 @@ sub configure() {
         my $template = $self->get_template( { file => 'configure.tt' } );
 
         ## Grab the values we already have for our settings, if any exist
-        $template->param( recordnumber => $self->retrieve_data('recordnumber'), interval => $self->retrieve_data('interval'), last_configured_by => $self->retrieve_data('last_configured_by'), );
+        $template->param( opacenabled => $self->retrieve_data('opacenabled'), recordnumber => $self->retrieve_data('recordnumber'), interval => $self->retrieve_data('interval'), last_configured_by => $self->retrieve_data('last_configured_by'), );
 
         print $cgi->header(
                 {
@@ -83,29 +92,31 @@ sub configure() {
     }
 
     else {
+        my $opacenabled = $cgi->param('opacenabled');
         my $recordnumber = $cgi->param('recordnumber');
         my $interval = $cgi->param('interval');
         $self->store_data(
             {
+                opacenabled => $opacenabled,
                 recordnumber => $recordnumber,
                 interval => $interval,
                 last_configured_by => C4::Context->userenv->{'number'},
             }
         );
-        $self->updateJS($recordnumber);
+        $self->updateJS();
+	$self->updateSQL();
         $self->go_home();
     }
     return 1;
 }
 
 sub updateJS() {
-    my ($self, $recordnumber) = @_;
+    my ( $self, $args ) = @_;
 
-    my $opacuserjs = C4::Context->preference('opacuserjs');
-    $opacuserjs =~ s/\n\/\* JS for Koha Recommender Plugin.*End of JS for Koha Recommender Plugin \*\///gs;
+    my $intranetuserjs = C4::Context->preference('intranetuserjs');
+    $intranetuserjs =~ s/\n\/\* JS for Koha Recommender Plugin.*End of JS for Koha Recommender Plugin \*\///gs;
 
-    my $template = $self->get_template( { file => 'opacuserjs.tt' } );
-    $template->param( 'recordnumber' => $recordnumber );
+    my $template = $self->get_template( { file => 'intranetuserjs.tt' } );
     my $recommender_js = $template->output();
 
     $recommender_js = qq|\n/* JS for Koha Recommender Plugin 
@@ -114,8 +125,60 @@ sub updateJS() {
       . $recommender_js
       . q|/* End of JS for Koha Recommender Plugin */|;
 
-    $opacuserjs .= $recommender_js;
+    $intranetuserjs .= $recommender_js;
+    C4::Context->set_preference( 'intranetuserjs', $intranetuserjs );
+
+    my $opacuserjs = C4::Context->preference('opacuserjs');
+    if($self->retrieve_data('opacenabled')) {
+	## Insert or Update Plugin JS
+    	$opacuserjs =~ s/\n\/\* JS for Koha Recommender Plugin.*End of JS for Koha Recommender Plugin \*\///gs;
+	
+    	my $template = $self->get_template( { file => 'opacuserjs.tt' } );
+    	my $recommender_js = $template->output();
+
+    	$recommender_js = qq|\n/* JS for Koha Recommender Plugin 
+   	This JS was added automatically by installing the Recommender plugin
+   	Please do not modify */\n|
+      	. $recommender_js
+      	. q|/* End of JS for Koha Recommender Plugin */|;
+
+    	$opacuserjs .= $recommender_js;
+    }
+    else {
+    	## Removing Plugin JS from Syspref
+    	$opacuserjs =~ s/\n\/\* JS for Koha Recommender Plugin.*End of JS for Koha Recommender Plugin \*\///gs;
+    }
     C4::Context->set_preference( 'opacuserjs', $opacuserjs );
+}
+
+sub updateSQL() {
+    my ( $self, $args ) = @_;
+
+    ## Create ExtractValue query according to MARC format
+    my $marcflavour = C4::Context->preference('marcflavour');
+    my $marcdata;
+    if ($marcflavour eq 'UNIMARC') {
+        $marcdata = "
+		ExtractValue(marcxml,'//datafield[\@tag=\"200\"]/subfield[\@code=\"a\"]') title,
+		ifnull(ExtractValue(marcxml,'//datafield[\@tag=\"200\"]/subfield[\@code=\"d\"]'),\"\") subtitle,
+		ifnull(ExtractValue(marcxml,'//datafield[\@tag=\"200\"]/subfield[\@code=\"h\"]'),\"\") partnumber,
+		ifnull(ExtractValue(marcxml,'//datafield[\@tag=\"200\"]/subfield[\@code=\"f\"]'),\"\") author,
+		"; #ExtractValue(marcxml,'//datafield[\@tag=\"200\"]/subfield[\@code=\"a\"]')";
+    } elsif ($marcflavour eq 'MARC21') {
+        $marcdata = "
+		ExtractValue(marcxml,'//datafield[\@tag=\"245\"]/subfield[\@code=\"a\"]') title,
+		ifnull(ExtractValue(marcxml,'//datafield[\@tag=\"245\"]/subfield[\@code=\"b\"]'),\"\") subtitle,
+		ifnull(ExtractValue(marcxml,'//datafield[\@tag=\"245\"]/subfield[\@code=\"n\"]'),\"\") partnumber,
+		ifnull(ExtractValue(marcxml,'//datafield[\@tag=\"245\"]/subfield[\@code=\"c\"]'),\"\") author,
+		"; #ExtractValue(marcxml,'//datafield[\@tag=\"245\"]/subfield[\@code=\"a\"]')";
+    }
+    my $template = $self->get_template( { file => 'savedsql.tt' } );
+    $template->param( 	'marcdata' => $marcdata,
+			'interval' => $self->retrieve_data('interval'),
+			'recordnumber' => $self->retrieve_data('recordnumber'),
+			);
+    my $recommender_sql = $template->output();
+    #$self->store_data( 'saved_sql' => $recommender_sql );
 }
 
 ## The existance of a 'report' subroutine means the plugin is capable
@@ -157,17 +220,10 @@ sub report_step2 {
     ##Biblionumber to query
     my $biblionumber = scalar $cgi->param('biblionumber');
 
-	##Eventually set a limit to the number of results to display
-	my $limit = "";
-	my $recordnumber = scalar $cgi->param('recordnumber');
-	if($recordnumber) {
-		$limit = "limit $recordnumber";
-	}
-    
-	##Choose how to output data (set to html if undefined)
-	my $template;
-	my $output = scalar $cgi->param('output');
-	if ($output eq 'csv') {
+    ##Choose how to output data (set to html if undefined)
+    my $template;
+    my $output = scalar $cgi->param('output');
+    if ($output eq 'csv') {
 		$template = $self->get_template({ file => 'report-step2-csv.tt' });
 		print "Content-type: text/csv\n\n";
 	}
@@ -180,8 +236,6 @@ sub report_step2 {
 	    print "Content-type: text/html\n\n";
     }
 
-    ## Get Interval to analyse
-    my $interval = $self->retrieve_data('interval');	
     ## First fetch value if UNIMARC or MARC21
     my $query = "select value from systempreferences where variable='marcflavour'";
     my $sth = $dbh->prepare($query);
@@ -209,7 +263,7 @@ sub report_step2 {
 	select distinct biblioitemnumber, sum(pretExemplaire) totalPrets from items inner join (
 		select distinct itemnumber, count(itemnumber) pretExemplaire from old_issues
 		where
-		issuedate > DATE_SUB(NOW(),INTERVAL $interval) and
+		issuedate > DATE_SUB(NOW(),INTERVAL ".$self->retrieve_data('interval')." YEAR) and
 		itemnumber is not null and borrowernumber is not null and
 		borrowernumber in (
 			select distinct borrowernumber from old_issues
@@ -222,7 +276,7 @@ sub report_step2 {
 	$contentfilter
 	group by biblioitemnumber
 	order by totalPrets desc, Rand()
-	$limit) suggestions
+	LIMIT ".$self->retrieve_data('recordnumber').") suggestions
 	on biblioitems.biblioitemnumber=suggestions.biblioitemnumber";
 
     $sth = $dbh->prepare($query);
