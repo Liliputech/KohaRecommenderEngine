@@ -1,8 +1,4 @@
-$(document).ready(function() {
-	if ($('body#opac-detail').size() > 0 && $('div#bibliodescriptions').size() > 0) {
-		detailRecommendations();
-	}
-});
+$(document).ready(function() { if ($('body#catalog_detail').size() > 0 && $('div#bibliodetails').size() > 0) detailRecommendations(); } );
 
 function detailRecommendations() {
 	//Get the biblionumber from URL
@@ -21,18 +17,19 @@ function detailRecommendations() {
 	       </table>\
 	       </div>";
 
-	var tabs = $('div#bibliodescriptions').tabs();
+	var tabs = $('div#bibliodetails').tabs();
 	var ul = tabs.find("ul");
 	$( tabMenu ).appendTo( ul );
 	$( tabContent ).appendTo(tabs);
 	tabs.tabs( "refresh" );
 
-	$('#recommendationTable').DataTable( {
-			"ajax": "http://"+location.host+"/recommendations.pl?output=json&biblionumber="+biblionumber,
+	$('#recommendationTable')
+		.DataTable( {
+			"ajax": "http://"+location.host+"/cgi-bin/koha/plugins/run.pl?class=Koha::Plugin::Com::Liliputech::RecommenderEngine&method=report&output=json&biblionumber="+biblionumber,
 			"order": [[1,"desc"]],
 			"lengthChange": false,			
 			"paging": false,
-			"searching": false
-	} );
-
+			"searching": false,
+			"fnCreatedRow" : function( nRow, aData, iDataIndex) { a = nRow.getElementsByTagName("a")[0]; a.href=a.href.replace("opac-","");	}	
+		} );
 }

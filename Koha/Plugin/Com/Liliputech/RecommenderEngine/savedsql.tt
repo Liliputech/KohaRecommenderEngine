@@ -1,0 +1,17 @@
+select suggestions.biblionumber,
+[% marcdata %]
+score from biblioitems
+join (
+	select items.biblionumber, count(distinct old_issues.borrowernumber) score from old_issues,items
+	where
+	items.itemnumber=old_issues.itemnumber and
+	old_issues.issuedate > DATE_SUB(NOW(),INTERVAL [% interval %] YEAR) and
+	borrowernumber in (
+		select distinct borrowernumber from items,old_issues where items.itemnumber=old_issues.itemnumber and items.biblionumber=<<biblionumber>> and borrowernumber is not null
+	)
+    and items.biblionumber <> <<biblionumber>>
+    group by items.biblionumber
+    order by score desc,rand()
+    limit [% recordnumber %]
+    ) suggestions
+on biblioitems.biblionumber=suggestions.biblionumber
