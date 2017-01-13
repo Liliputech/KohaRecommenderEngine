@@ -47,6 +47,9 @@ sub new {
 
 sub install() {
     my ( $self, $args ) = @_;
+    $self->store_data({'recordnumber'=>'5','interval'=>'5'});
+    $self->updateSQL();
+    $self->updateJS();
     return 1;
 }
 
@@ -64,10 +67,14 @@ sub uninstall() {
     $intranetuserjs =~ s/\n\/\* JS for Koha Recommender Plugin.*End of JS for Koha Recommender Plugin \*\///gs;
     C4::Context->set_preference( 'intranetuserjs', $intranetuserjs );
 
-    # Remove configurations data
+    # Remove configurations data and public report
+    my $report_id = $self->retrieve_data('report_id');
     my $dbh = C4::Context->dbh;
-    my $query = "delete from plugin_data where plugin_class like 'Koha::Plugin::Com::Liliputech::RecommenderEngine'";
+    my $query = "delete from saved_sql where id=$report_id";
     my $sth = $dbh->prepare($query);
+    $sth->execute();
+    $query = "delete from plugin_data where plugin_class like 'Koha::Plugin::Com::Liliputech::RecommenderEngine';";
+    $sth = $dbh->prepare($query);
     $sth->execute();
 }
 
@@ -100,11 +107,11 @@ sub configure() {
                 opacenabled => $opacenabled,
                 recordnumber => $recordnumber,
                 interval => $interval,
-                last_configured_by => C4::Context->userenv->{'number'},
+                last_configured_by => C4::Context->userenv->{'number'}
             }
         );
-        $self->updateJS();
 	$self->updateSQL();
+        $self->updateJS();
         $self->go_home();
     }
     return 1;
@@ -117,6 +124,7 @@ sub updateJS() {
     $intranetuserjs =~ s/\n\/\* JS for Koha Recommender Plugin.*End of JS for Koha Recommender Plugin \*\///gs;
 
     my $template = $self->get_template( { file => 'intranetuserjs.tt' } );
+    $template->param( 'report_id' => $self->retrieve_data('report_id') );
     my $recommender_js = $template->output();
 
     $recommender_js = qq|\n/* JS for Koha Recommender Plugin 
@@ -134,6 +142,7 @@ sub updateJS() {
     	$opacuserjs =~ s/\n\/\* JS for Koha Recommender Plugin.*End of JS for Koha Recommender Plugin \*\///gs;
 	
     	my $template = $self->get_template( { file => 'opacuserjs.tt' } );
+	$template->param( 'report_id' => $self->retrieve_data('report_id') );
     	my $recommender_js = $template->output();
 
     	$recommender_js = qq|\n/* JS for Koha Recommender Plugin 
@@ -158,19 +167,15 @@ sub updateSQL() {
     my $marcflavour = C4::Context->preference('marcflavour');
     my $marcdata;
     if ($marcflavour eq 'UNIMARC') {
-        $marcdata = "
-		ExtractValue(marcxml,'//datafield[\@tag=\"200\"]/subfield[\@code=\"a\"]') title,
+        $marcdata = "ExtractValue(marcxml,'//datafield[\@tag=\"200\"]/subfield[\@code=\"a\"]') title,
 		ifnull(ExtractValue(marcxml,'//datafield[\@tag=\"200\"]/subfield[\@code=\"d\"]'),\"\") subtitle,
 		ifnull(ExtractValue(marcxml,'//datafield[\@tag=\"200\"]/subfield[\@code=\"h\"]'),\"\") partnumber,
-		ifnull(ExtractValue(marcxml,'//datafield[\@tag=\"200\"]/subfield[\@code=\"f\"]'),\"\") author,
-		"; #ExtractValue(marcxml,'//datafield[\@tag=\"200\"]/subfield[\@code=\"a\"]')";
+		ifnull(ExtractValue(marcxml,'//datafield[\@tag=\"200\"]/subfield[\@code=\"f\"]'),\"\") author,";
     } elsif ($marcflavour eq 'MARC21') {
-        $marcdata = "
-		ExtractValue(marcxml,'//datafield[\@tag=\"245\"]/subfield[\@code=\"a\"]') title,
+        $marcdata = "ExtractValue(marcxml,'//datafield[\@tag=\"245\"]/subfield[\@code=\"a\"]') title,
 		ifnull(ExtractValue(marcxml,'//datafield[\@tag=\"245\"]/subfield[\@code=\"b\"]'),\"\") subtitle,
 		ifnull(ExtractValue(marcxml,'//datafield[\@tag=\"245\"]/subfield[\@code=\"n\"]'),\"\") partnumber,
-		ifnull(ExtractValue(marcxml,'//datafield[\@tag=\"245\"]/subfield[\@code=\"c\"]'),\"\") author,
-		"; #ExtractValue(marcxml,'//datafield[\@tag=\"245\"]/subfield[\@code=\"a\"]')";
+		ifnull(ExtractValue(marcxml,'//datafield[\@tag=\"245\"]/subfield[\@code=\"c\"]'),\"\") author,";
     }
     my $template = $self->get_template( { file => 'savedsql.tt' } );
     $template->param( 	'marcdata' => $marcdata,
@@ -178,7 +183,21 @@ sub updateSQL() {
 			'recordnumber' => $self->retrieve_data('recordnumber'),
 			);
     my $recommender_sql = $template->output();
-    #$self->store_data( 'saved_sql' => $recommender_sql );
+    my $dbh = C4::Context->dbh;
+    my $query;
+    my $report_id = $self->retrieve_data('report_id');
+    if($report_id){
+	$query = "UPDATE saved_sql SET savedsql=? WHERE id=?;";
+	my $sth = $dbh->prepare($query);
+	$sth->execute($recommender_sql,$report_id);
+     }
+    else
+    {
+	$query = "INSERT INTO saved_sql (savedsql,report_name,notes,cache_expiry,public) VALUES (?,'RecommendationEngine','RecommendationEngine - DO NOT REMOVE',0,1);";
+    	my $sth = $dbh->prepare($query);
+	$sth->execute($recommender_sql);
+	$self->store_data( {'report_id' => $dbh->last_insert_id(undef,undef,undef,undef) });
+    }
 }
 
 ## The existance of a 'report' subroutine means the plugin is capable

@@ -10,7 +10,11 @@ function detailRecommendations() {
 	       <table id='recommendationTable' class='table table-bordered table-striped dataTable no-footer' width='100%' cellspacing='0'>\
 	       <thead>\
 	       <tr>\
+	       <th>Biblionumber</th>\
 	       <th>Title</th>\
+	       <th>Subtitle</th>\
+	       <th>Part</th>\
+	       <th>Author</th>\
 	       <th>Score</th>\
 	       </tr>\
 	       </thead>\
@@ -25,11 +29,14 @@ function detailRecommendations() {
 
 	$('#recommendationTable')
 		.DataTable( {
-			"ajax": "http://"+location.host+"/cgi-bin/koha/plugins/run.pl?class=Koha::Plugin::Com::Liliputech::RecommenderEngine&method=report&output=json&biblionumber="+biblionumber,
-			"order": [[1,"desc"]],
+			"ajax": {
+				"url" : window.location.origin+"/cgi-bin/koha/svc/report?id=[% report_id %]&sql_params="+biblionumber+"&sql_params="+biblionumber,
+				"dataSrc" : ""
+			},
+			"order": [[5,"desc"]],
 			"lengthChange": false,			
 			"paging": false,
 			"searching": false,
-			"fnCreatedRow" : function( nRow, aData, iDataIndex) { a = nRow.getElementsByTagName("a")[0]; a.href=a.href.replace("opac-","");	}	
+			//"fnCreatedRow" : function( nRow, aData, iDataIndex) { a = nRow.getElementsByTagName("a")[0]; a.href=a.href.replace("opac-","");}	
 		} );
 }
