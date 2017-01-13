@@ -47,9 +47,6 @@ sub new {
 
 sub install() {
     my ( $self, $args ) = @_;
-    $self->store_data({'recordnumber'=>'5','interval'=>'5'});
-    $self->updateSQL();
-    $self->updateJS();
     return 1;
 }
 
@@ -73,7 +70,7 @@ sub uninstall() {
     my $query = "delete from saved_sql where id=$report_id";
     my $sth = $dbh->prepare($query);
     $sth->execute();
-    $query = "delete from plugin_data where plugin_class like 'Koha::Plugin::Com::Liliputech::RecommenderEngine';";
+    $query = "delete from plugin_data where plugin_class like '%RecommenderEngine%'";
     $sth = $dbh->prepare($query);
     $sth->execute();
 }
@@ -200,117 +197,13 @@ sub updateSQL() {
     }
 }
 
-## The existance of a 'report' subroutine means the plugin is capable
-## of running a report. This example report can output a list of patrons
-## either as HTML or as a CSV file. Technically, you could put all your code
-## in the report method, but that would be a really poor way to write code
-## for all but the simplest reports
 sub report {
     my ( $self, $args ) = @_;
     my $cgi = $self->{'cgi'};
 
-    unless ( scalar $cgi->param('biblionumber') ) {
-        $self->report_step1();
-    }
-    else {
-        $self->report_step2();
-    }
-}
-
-## These are helper functions that are specific to this plugin
-## You can manage the control flow of your plugin any
-## way you wish, but I find this is a good approach
-sub report_step1 {
-    my ( $self, $args ) = @_;
-    my $cgi = $self->{'cgi'};
-
-    my $template = $self->get_template({ file => 'report-step1.tt' });
+    my $template = $self->get_template({ file => 'report.tt' });
 
     print $cgi->header();
-    print $template->output();
-}
-
-sub report_step2 {
-    my ( $self, $args ) = @_;
-    my $cgi = $self->{'cgi'};
-
-    my $dbh = C4::Context->dbh;
- 
-    ##Biblionumber to query
-    my $biblionumber = scalar $cgi->param('biblionumber');
-
-    ##Choose how to output data (set to html if undefined)
-    my $template;
-    my $output = scalar $cgi->param('output');
-    if ($output eq 'csv') {
-		$template = $self->get_template({ file => 'report-step2-csv.tt' });
-		print "Content-type: text/csv\n\n";
-	}
-	elsif ($output eq 'json') {
-		$template = $self->get_template({ file => 'report-step2-json.tt' });
-		print "Content-type: application/json\n\n";
-	}
-	else {
-        $template = $self->get_template({ file => 'report-step2.tt' });
-	    print "Content-type: text/html\n\n";
-    }
-
-    ## First fetch value if UNIMARC or MARC21
-    my $query = "select value from systempreferences where variable='marcflavour'";
-    my $sth = $dbh->prepare($query);
-    $sth->execute();
-    my $marcflavour = ${$dbh->selectcol_arrayref($query)}[0];
-    
-    ## Create ExtractValue query according to MARC format
-    my $marcfilter;
-	if ($marcflavour eq 'UNIMARC') {
-        $marcfilter = "ExtractValue(marcxml,'//datafield[\@tag=\"200\"]/subfield[\@code=\"a\"]')";
-	} elsif ($marcflavour eq 'MARC21') {
-        $marcfilter = "ExtractValue(marcxml,'//datafield[\@tag=\"245\"]/subfield[\@code=\"a\"]')";
-    }
-
-    my $contentfilter = "";
-    #Could be like this :
-    #my $contentfilter = "and items.statisticvalue in (select distinct statisticvalue from items where biblioitemnumber = '$biblionumber')";
-    
-    ## Wow such a big shit...
-    ##Query ok for UNIMARC Format (200a), this has to be changed in configuration if another cataloging format is to be used.
-
-    $query = "
-	select suggestions.biblioitemnumber as biblionumber, $marcfilter AS title, totalPrets as nissues from biblioitems
-	inner join (
-	select distinct biblioitemnumber, sum(pretExemplaire) totalPrets from items inner join (
-		select distinct itemnumber, count(itemnumber) pretExemplaire from old_issues
-		where
-		issuedate > DATE_SUB(NOW(),INTERVAL ".$self->retrieve_data('interval')." YEAR) and
-		itemnumber is not null and borrowernumber is not null and
-		borrowernumber in (
-			select distinct borrowernumber from old_issues
-			where borrowernumber is not null and itemnumber IN (
-				select itemnumber from items where biblioitemnumber = '$biblionumber'
-			)
-		) group by itemnumber
-	) exemplaires on items.itemnumber=exemplaires.itemnumber
-	where biblioitemnumber <> '$biblionumber'
-	$contentfilter
-	group by biblioitemnumber
-	order by totalPrets desc, Rand()
-	LIMIT ".$self->retrieve_data('recordnumber').") suggestions
-	on biblioitems.biblioitemnumber=suggestions.biblioitemnumber";
-
-    $sth = $dbh->prepare($query);
-    $sth->execute();
-
-    my @results;
-    while ( my $row = $sth->fetchrow_hashref() ) {
-        push( @results, $row );
-    }
- 
-    $template->param(
-	biblionumber => $biblionumber,
-        results => \@results
-    );
-
     print $template->output();
 }
 1;

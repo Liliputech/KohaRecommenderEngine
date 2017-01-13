@@ -1,3 +1,0 @@
-"BiblioNumber";"Title";"Number of issues"
-[% FOREACH r IN results %]"[% r.biblionumber %]";"[% r.title %]";"[% r.nissues %]"
-[% END %]
