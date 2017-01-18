@@ -28,13 +28,14 @@ function detailRecommendations() {
 	tabs.tabs( "refresh" );
 
 	$('#recommendationTable').DataTable( {
-			"ajax": {
-				"url" : window.location.origin+"/cgi-bin/koha/svc/report?id=[% report_id %]&sql_params="+biblionumber+"&sql_params="+biblionumber,
-				"dataSrc" : ""
-			},
-			"order": [[5,"desc"]],
-			"lengthChange": false,			
-			"paging": false,
-			"searching": false
+		ajax: {
+			url: window.location.origin+"/cgi-bin/koha/svc/report?id=[% report_id %]&sql_params="+biblionumber+"&sql_params="+biblionumber,
+			dataSrc: ""
+		},
+		order: [5,"desc"],
+		lengthChange: false,			
+		paging: false,
+		searching: false,
+		columnDefs:[{targets:0,render: function ( data, type, full, meta ) {return "<a href='opac-detail.pl?biblionumber="+data+"'>"+data+"</a>";}}]
 	} );
 }

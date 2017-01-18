@@ -1,0 +1,18 @@
+[% INCLUDE 'doc-head-open.inc' %]
+ <title>Koha: Recommendations</title>
+[% INCLUDE 'doc-head-close.inc' %]
+</head>
+<body>
+[% INCLUDE 'header.inc' %]
+[% INCLUDE 'cat-search.inc' %]
+
+<div id="breadcrumbs"><a href="/cgi-bin/koha/mainpage.pl">Home</a> &rsaquo; <a href="/cgi-bin/koha/plugins/plugins-home.pl">Plugins</a> &rsaquo; Recommendations &rsaquo;</div>
+
+<div id="doc3">
+	<h3>Koha Recommendation Engine</h3>
+	This page doesn't gives any results.<br>
+	Every functionnalities of this plugin are to be found either in the Catalogue Module or on the OPAC if proper configuration has been made.<br>
+	<br>
+	Before any functionnality to be available you'll have to configure the plugin once.<br>
+</div> 
+[% INCLUDE 'intranet-bottom.inc' %]
