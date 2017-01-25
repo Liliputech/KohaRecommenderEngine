@@ -29,25 +29,12 @@ Then check in Koha Administration panel, search for the UseKohaPlugins variable,
 Finally go to the Reports panel and click on "Report Plugins".<br>
 On the top left corner you'll see an "Upload a plugin" link, which will enable you to install the KPZ file.<br>
 
-## Integration to OPAC
-After installation of the plugin, you just need to click on "configure" and the Javascript code which enable OPAC integration is automatically added to OpacUserJS syspref.
-When the plugin is uninstalled, this piece of code is automatically removed.
-One more step is needed for the plugin to work, some part of the script has to be available publicly.
-To permit this you have to add the following few lines in your Apache configuration file (most probably koha-httpd.conf).
-Don't forget to modify the paths according to your koha installation.
+## Configuration - Integration to OPAC
+Configuration needs to be run at least once for the plugin to work.<br>
+On first configuration you will have to choose how many recommendations to compute and how many years of historical data to analyse.<br>
+You can also choose whether or not you want the results to be available on OPAC (checked = yes).<br>
+After clicking on the "Save" button, the plugin should be working correctly and results will be displayed in the intranet interface + Opac interface if enabled.<br>
 
-```
-  ScriptAlias /recommendations.pl "/home/koha/var/lib/plugins/Koha/Plugin/Com/Liliputech/RecommenderEngine/recommendations.pl"
-  Alias /plugin "/var/lib/plugins"
-  # The stanza below is needed for Apache 2.4+
-  <Directory /home/koha/var/lib/plugins>
-        Options Indexes FollowSymLinks
-        AllowOverride None
-        Require all granted
-  </Directory>
-```
-
-If everything has been setup correctly you should get a new tab next to the "Comment" tab on Opac Details:
 ![Opac Details Recommendation](opac-detail-screenshot.png)
 
 ## How to use
@@ -97,24 +84,13 @@ Ensuite rendez vous dans le module d'Administration de Koha, cherchez la variabl
 Pour finir, aller dans la partie "Rapports" et cliquez sur le lien "Plugins de rapports".<br>
 Dans le coin supérieur gauche vous devriez alors voir un lien "Téléverser un plugin" ou "Upload a plugin", qui vous permettra d'installer le fichier ".KPZ".<br>
 
-## Integration à l'OPAC
-Après l'installation du plugin, il suffit de cliquer sur "configurer" pour qu'un code Javascript qui permet d'intégrer les recommendations sur l'OPAC soit ajouté à la syspref "OpacUserJS".<br>
-Ce code est automatiquement supprimé lorsque le plugin est désinstallé.<br>
-Une étape supplémentaire est nécessaire au fonctionnement du plugin, il faut ajouter les lignes suivantes à la configuration de votre serveur Apache (probablement dans le fichier koha-httpd.conf).<br>
-N'oubliez pas d'éditer les chemins présents dans l'exemple conformément à votre installation de Koha.<br>
+## Configuration - Integration à l'OPAC
+Pour que le plugin fonctionne correctement il doit être configuré au moins une fois.<br>
+À la première configuration vous devrez renseigner le nombre de résultats à générer ainsi que le nombre d'années d'historique de prêt à prendre en compte.<br>
+Vous pouvez également choisir si vous souhaitez que les résultats soient affichés sur l'OPAC (case coché = oui).<br>
+Après avoir cliqué sur le bouton "Save" le plugin devrait fonctionner normalement et les résultats s'afficher sur l'interface Pro, et également sur l'OPAC si l'option a été coché.<br>
 
-```
-  ScriptAlias /recommendations.pl "/home/koha/var/lib/plugins/Koha/Plugin/Com/Liliputech/RecommenderEngine/recommendations.pl"
-  Alias /plugin "/var/lib/plugins"
-  # The stanza below is needed for Apache 2.4+
-  <Directory /home/koha/var/lib/plugins>
-        Options Indexes FollowSymLinks
-        AllowOverride None
-        Require all granted
-  </Directory>
-```
-
-Si tout s'est pasé correctement vous devriez obtenir un nouvel onglet à la suite de l'onglet "Commentaires" sur la page opac-detail:
+Si tout s'est passé correctement vous devriez obtenir un nouvel onglet à la suite de l'onglet "Commentaires" sur la page opac-detail:
 ![Opac Details Recommendation](opac-detail-screenshot.png)
 
 ## To Do
