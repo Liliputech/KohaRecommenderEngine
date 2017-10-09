@@ -1,6 +1,6 @@
 select suggestions.biblionumber,
 [% marcdata %]
-score from biblioitems
+score from biblio_metadata
 join (
 	select items.biblionumber, count(distinct old_issues.borrowernumber) score from old_issues,items
 	where
@@ -14,4 +14,4 @@ join (
     order by score desc,rand()
     limit [% recordnumber %]
     ) suggestions
-on biblioitems.biblionumber=suggestions.biblionumber
+on biblio_metadata.biblionumber=suggestions.biblionumber

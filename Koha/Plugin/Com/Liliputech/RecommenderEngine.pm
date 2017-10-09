@@ -9,7 +9,6 @@ use base qw(Koha::Plugins::Base);
 
 ## We will also need to include any Koha libraries we want to access
 use C4::Context;
-use C4::Branch;
 use C4::Members;
 use C4::Auth;
 
@@ -164,15 +163,15 @@ sub updateSQL() {
     my $marcflavour = C4::Context->preference('marcflavour');
     my $marcdata;
     if ($marcflavour eq 'UNIMARC') {
-        $marcdata = "ExtractValue(marcxml,'//datafield[\@tag=\"200\"]/subfield[\@code=\"a\"]') title,
-		ifnull(ExtractValue(marcxml,'//datafield[\@tag=\"200\"]/subfield[\@code=\"d\"]'),\"\") subtitle,
-		ifnull(ExtractValue(marcxml,'//datafield[\@tag=\"200\"]/subfield[\@code=\"h\"]'),\"\") partnumber,
-		ifnull(ExtractValue(marcxml,'//datafield[\@tag=\"200\"]/subfield[\@code=\"f\"]'),\"\") author,";
+        $marcdata = "ExtractValue(metadata,'//datafield[\@tag=\"200\"]/subfield[\@code=\"a\"]') title,
+		ifnull(ExtractValue(metadata,'//datafield[\@tag=\"200\"]/subfield[\@code=\"d\"]'),\"\") subtitle,
+		ifnull(ExtractValue(metadata,'//datafield[\@tag=\"200\"]/subfield[\@code=\"h\"]'),\"\") partnumber,
+		ifnull(ExtractValue(metadata,'//datafield[\@tag=\"200\"]/subfield[\@code=\"f\"]'),\"\") author,";
     } elsif ($marcflavour eq 'MARC21') {
-        $marcdata = "ExtractValue(marcxml,'//datafield[\@tag=\"245\"]/subfield[\@code=\"a\"]') title,
-		ifnull(ExtractValue(marcxml,'//datafield[\@tag=\"245\"]/subfield[\@code=\"b\"]'),\"\") subtitle,
-		ifnull(ExtractValue(marcxml,'//datafield[\@tag=\"245\"]/subfield[\@code=\"n\"]'),\"\") partnumber,
-		ifnull(ExtractValue(marcxml,'//datafield[\@tag=\"245\"]/subfield[\@code=\"c\"]'),\"\") author,";
+        $marcdata = "ExtractValue(metadata,'//datafield[\@tag=\"245\"]/subfield[\@code=\"a\"]') title,
+		ifnull(ExtractValue(metadata,'//datafield[\@tag=\"245\"]/subfield[\@code=\"b\"]'),\"\") subtitle,
+		ifnull(ExtractValue(metadata,'//datafield[\@tag=\"245\"]/subfield[\@code=\"n\"]'),\"\") partnumber,
+		ifnull(ExtractValue(metadata,'//datafield[\@tag=\"245\"]/subfield[\@code=\"c\"]'),\"\") author,";
     }
     my $template = $self->get_template( { file => 'savedsql.tt' } );
     $template->param( 	'marcdata' => $marcdata,
