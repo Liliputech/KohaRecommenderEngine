@@ -113,24 +113,63 @@ sub configure() {
     return 1;
 }
 
+sub intranet_js {
+    my ( $self , $args ) = @_;
+    my $recommender_js = q|
+<script>
+/* JS for Koha Recommender Plugin 
+This JS was added automatically by installing the Recommender plugin
+Please do not modify */
+$(document).ready(function() { if ($('body#catalog_detail').size() > 0 && $('div#bibliodetails').size() > 0) detailRecommendations(); } );
+
+function detailRecommendations() {
+	//Get the biblionumber from URL
+	var biblionumber = location.search.split('biblionumber=')[1]		
+        var tabMenu = "<li class='ui-state-default ui-corner-top' role='tab' tabindex='-1' aria-controls='recommendations' aria-labelledby='ui-id-7' aria-selected='false'><a href='#recommendations' class='ui-tabs-anchor' role='presentation' tabindex='-1' id='ui-id-7'>Similar Items</a></li>";
+
+	var tabContent = "\
+	       <div id='recommendations'>\
+	       <table id='recommendationTable' style='width:100%'>\
+	       <thead>\
+	       <tr>\
+	       <th>Biblionumber</th>\
+	       <th>Title</th>\
+	       <th>Subtitle</th>\
+	       <th>Part</th>\
+	       <th>Author</th>\
+	       <th>Score</th>\
+	       </tr>\
+	       </thead>\
+	       </table>\
+	       </div>";
+
+	var tabs = $('div#bibliodetails').tabs();
+	var ul = tabs.find("ul");
+	$( tabMenu ).appendTo( ul );
+	$( tabContent ).appendTo(tabs);
+	tabs.tabs( "refresh" );
+
+	$('#recommendationTable').DataTable( {
+		ajax: {
+			url : window.location.origin+"/cgi-bin/koha/svc/report?id=| . $self->retrieve_data('report_id') . q|&sql_params="+biblionumber+"&sql_params="+biblionumber,
+			dataSrc : ""
+		},
+		order: [5,"desc"],
+		lengthChange: false,			
+		paging: false,
+		searching: false,
+		info: false,
+		columnDefs:[{targets:0,render: function ( data, type, full, meta ) {return "<a href='detail.pl?biblionumber="+data+"'>"+data+"</a>";}}]
+	} );
+}
+/* End of JS for Koha Recommender Plugin */
+</script>|;
+
+    return $recommender_js;
+}
+
 sub updateJS() {
     my ( $self, $args ) = @_;
-
-    my $intranetuserjs = C4::Context->preference('intranetuserjs');
-    $intranetuserjs =~ s/\n\/\* JS for Koha Recommender Plugin.*End of JS for Koha Recommender Plugin \*\///gs;
-
-    my $template = $self->get_template( { file => 'intranetuserjs.tt' } );
-    $template->param( 'report_id' => $self->retrieve_data('report_id') );
-    my $recommender_js = $template->output();
-
-    $recommender_js = qq|\n/* JS for Koha Recommender Plugin 
-   This JS was added automatically by installing the Recommender plugin
-   Please do not modify */\n|
-      . $recommender_js
-      . q|/* End of JS for Koha Recommender Plugin */|;
-
-    $intranetuserjs .= $recommender_js;
-    C4::Context->set_preference( 'intranetuserjs', $intranetuserjs );
 
     my $opacuserjs = C4::Context->preference('opacuserjs');
     if($self->retrieve_data('opacenabled')) {
