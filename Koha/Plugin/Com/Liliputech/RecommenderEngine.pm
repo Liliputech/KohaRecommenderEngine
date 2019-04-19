@@ -13,16 +13,16 @@ use C4::Members;
 use C4::Auth;
 
 ## Here we set our plugin version
-our $VERSION = 1.1;
+our $VERSION = 1.2;
 
 ## Here is our metadata, some keys are required, some are optional
 our $metadata = {
     name   => 'Koha Recommender Plugin',
-    author => 'Arthur O Suzuki',
+    author => 'Arthur Suzuki, Josef Moravec',
     description => 'This plugin implements recommendations for each Bibliographic reference based on all other borrowers old issues',
     date_authored   => '2016-06-27',
-    date_updated    => '2017-01-12',
-    minimum_version => '3.16',
+    date_updated    => '2019-04-19',
+    minimum_version => '17.11',
     maximum_version => undef,
     version         => $VERSION,
 };
@@ -168,31 +168,62 @@ function detailRecommendations() {
     return $recommender_js;
 }
 
-sub updateJS() {
+sub opac_js {
     my ( $self, $args ) = @_;
-
-    my $opacuserjs = C4::Context->preference('opacuserjs');
+    my $recommender_js = "";
     if($self->retrieve_data('opacenabled')) {
-	## Insert or Update Plugin JS
-    	$opacuserjs =~ s/\n\/\* JS for Koha Recommender Plugin.*End of JS for Koha Recommender Plugin \*\///gs;
-	
-    	my $template = $self->get_template( { file => 'opacuserjs.tt' } );
-	$template->param( 'report_id' => $self->retrieve_data('report_id') );
-    	my $recommender_js = $template->output();
-
-    	$recommender_js = qq|\n/* JS for Koha Recommender Plugin 
+    	$recommender_js = q|
+<script>
+/*      JS for Koha Recommender Plugin 
    	This JS was added automatically by installing the Recommender plugin
-   	Please do not modify */\n|
-      	. $recommender_js
-      	. q|/* End of JS for Koha Recommender Plugin */|;
+   	Please do not modify */
 
-    	$opacuserjs .= $recommender_js;
+$(document).ready(function() { if ($('body#opac-detail').size() > 0 && $('div#bibliodescriptions').size() > 0) detailRecommendations(); } );
+
+function detailRecommendations() {
+	//Get the biblionumber from URL
+	var biblionumber = location.search.split('biblionumber=')[1]		
+        var tabMenu = "<li class='ui-state-default ui-corner-top' role='tab' tabindex='-1' aria-controls='recommendations' aria-labelledby='ui-id-7' aria-selected='false'><a href='#recommendations' class='ui-tabs-anchor' role='presentation' tabindex='-1' id='ui-id-7'>Similar Items</a></li>";
+
+	var tabContent = "\
+	       <div id='recommendations' aria-labelledby='ui-id-7' class='ui-tabs-panel ui-widget-content ui-corner-bottom' role='tabpanel' style='display: none;' aria-expanded='false' aria-hidden='true'>\
+	       <table id='recommendationTable' class='table table-bordered table-striped dataTable no-footer' width='100%' cellspacing='0'>\
+	       <thead>\
+	       <tr>\
+	       <th>Biblionumber</th>\
+	       <th>Title</th>\
+	       <th>Subtitle</th>\
+	       <th>Part</th>\
+	       <th>Author</th>\
+	       <th>Score</th>\
+	       </tr>\
+	       </thead>\
+	       </table>\
+	       </div>";
+
+	var tabs = $('div#bibliodescriptions').tabs();
+	var ul = tabs.find("ul");
+	$( tabMenu ).appendTo( ul );
+	$( tabContent ).appendTo(tabs);
+	tabs.tabs( "refresh" );
+
+	$('#recommendationTable').DataTable( {
+		ajax: {
+			url: window.location.origin+"/cgi-bin/koha/svc/report?id=| . $self->retrieve_data('report_id') . q|&sql_params="+biblionumber+"&sql_params="+biblionumber,
+			dataSrc: ""
+		},
+		order: [5,"desc"],
+		lengthChange: false,			
+		paging: false,
+		info: false,
+		searching: false,
+		columnDefs:[{targets:0,render: function ( data, type, full, meta ) {return "<a href='opac-detail.pl?biblionumber="+data+"'>"+data+"</a>";}}]
+	} );
+}
+</script>
+|;
     }
-    else {
-    	## Removing Plugin JS from Syspref
-    	$opacuserjs =~ s/\n\/\* JS for Koha Recommender Plugin.*End of JS for Koha Recommender Plugin \*\///gs;
-    }
-    C4::Context->set_preference( 'opacuserjs', $opacuserjs );
+    return $recommender_js;
 }
 
 sub updateSQL() {
