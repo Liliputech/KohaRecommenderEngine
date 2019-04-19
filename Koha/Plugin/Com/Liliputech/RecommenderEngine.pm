@@ -46,6 +46,8 @@ sub new {
 
 sub install() {
     my ( $self, $args ) = @_;
+    $self->store_data( { opacenabled => 1, recordnumber => 10, interval => 1 } );
+    $self->updateSQL();
     return 1;
 }
 
@@ -54,14 +56,6 @@ sub install() {
 ## after ourselves!
 sub uninstall() {
     my ( $self, $args ) = @_;
-
-    # Removing Plugin JS from Syspref
-    my $opacuserjs = C4::Context->preference('opacuserjs');
-    $opacuserjs =~ s/\n\/\* JS for Koha Recommender Plugin.*End of JS for Koha Recommender Plugin \*\///gs;
-    C4::Context->set_preference( 'opacuserjs', $opacuserjs );
-    my $intranetuserjs = C4::Context->preference('intranetuserjs');
-    $intranetuserjs =~ s/\n\/\* JS for Koha Recommender Plugin.*End of JS for Koha Recommender Plugin \*\///gs;
-    C4::Context->set_preference( 'intranetuserjs', $intranetuserjs );
 
     # Remove configurations data and public report
     my $report_id = $self->retrieve_data('report_id');
@@ -107,7 +101,6 @@ sub configure() {
             }
         );
 	$self->updateSQL();
-        $self->updateJS();
         $self->go_home();
     }
     return 1;
