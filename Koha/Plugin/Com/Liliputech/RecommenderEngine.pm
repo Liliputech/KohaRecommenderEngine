@@ -6,6 +6,7 @@ use Data::Dumper;
 
 ## Required for all plugins
 use base qw(Koha::Plugins::Base);
+use Mojo::JSON qw(decode_json);;
 
 ## We will also need to include any Koha libraries we want to access
 use C4::Context;
@@ -267,5 +268,17 @@ sub report {
 
     print $cgi->header();
     print $template->output();
+}
+
+sub api_routes {
+    my ( $self, $args ) = @_;
+    my $spec_str = $self->mbf_read('openapi.json');
+    my $spec     = decode_json($spec_str);
+    return $spec;
+}
+
+sub api_namespace {
+    my ( $self ) = @_;
+    return 'recommendation-api';
 }
 1;

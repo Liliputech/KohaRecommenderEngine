@@ -1,0 +1,41 @@
+{
+	"/recommendations": {
+		"get": {
+			"x-mojo-to": "Com::Liliputech::RecommenderEngine::Controller#get",
+			"operationId": "getRecommendation",
+			"tags": ["recommendation","biblio"],
+			"produces": [
+				"application/json"
+			],
+			"responses": {
+				"200": {
+					"description": "A list of recommended biblios",
+					"schema": {
+						"type": "array",
+						"items": {
+							"type": "object"
+						}
+					}
+				},
+				"404": {
+					"description": "No results found",
+					"schema": {
+						"type": "object"
+					}
+				},
+				"500": {
+					"description": "Internal error",
+					"schema": {
+						"type": "object"
+					}
+				},
+				"503": {
+					"description": "Under maintenance",
+					"schema": {
+						"type": "object"
+					}
+				}
+			}
+		}
+	}
+}
