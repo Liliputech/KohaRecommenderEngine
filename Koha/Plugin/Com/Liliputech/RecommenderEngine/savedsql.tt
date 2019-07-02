@@ -15,3 +15,4 @@ join (
     limit [% recordnumber %]
     ) suggestions
 on biblio_metadata.biblionumber=suggestions.biblionumber
+join biblio ON biblio_metadata.biblionumber = biblio.biblionumber
