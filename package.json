@@ -1,7 +1,7 @@
 {
   "name": "KohaRecommenderEngine",
   "version": "1.0",
-  "previous_version": "0.9",
+  "previous_version": "1.0",
   "description": "Koha Recommender Engine",
   "devDependencies": {
     "gulp": "^3.9.1",
@@ -24,7 +24,7 @@
   "homepage": "https://github.com/liliputech/koharecommenderengine#readme",
   "dependencies": {
     "datetime": "0.0.3",
-    "jsonfile": "^4.0.0",
+    "jsonfile": "^5.0.0",
     "node-datetime": "^2.0.0"
   }
 }
