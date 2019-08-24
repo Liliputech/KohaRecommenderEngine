@@ -13,7 +13,7 @@ use C4::Members;
 use C4::Auth;
 
 ## Here we set our plugin version
-our $VERSION = 1.2;
+our $VERSION = "{VERSION}";
 
 ## Here is our metadata, some keys are required, some are optional
 our $metadata = {
@@ -21,7 +21,7 @@ our $metadata = {
     author => 'Arthur Suzuki, Josef Moravec',
     description => 'This plugin implements recommendations for each Bibliographic reference based on all other borrowers old issues',
     date_authored   => '2016-06-27',
-    date_updated    => '2019-04-19',
+    date_updated    => '1900-01-01',
     minimum_version => '17.11',
     maximum_version => undef,
     version         => $VERSION,
