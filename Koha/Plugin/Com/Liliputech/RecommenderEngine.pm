@@ -1,19 +1,19 @@
+use strict;
+use warnings;
 package Koha::Plugin::Com::Liliputech::RecommenderEngine;
 
 ## It's good practive to use Modern::Perl
 use Modern::Perl;
-use Data::Dumper;
 
 ## Required for all plugins
 use base qw(Koha::Plugins::Base);
 
 ## We will also need to include any Koha libraries we want to access
 use C4::Context;
-use C4::Members;
 use C4::Auth;
 
 ## Here we set our plugin version
-our $VERSION = "{VERSION}";
+our $VERSION = '1.2';
 
 ## Here is our metadata, some keys are required, some are optional
 our $metadata = {
@@ -21,8 +21,8 @@ our $metadata = {
     author => 'Arthur Suzuki, Josef Moravec',
     description => 'This plugin implements recommendations for each Bibliographic reference based on all other borrowers old issues',
     date_authored   => '2016-06-27',
-    date_updated    => '1900-01-01',
-    minimum_version => '17.11',
+    date_updated    => '2019-08-24',
+    minimum_version => '17.11.00.000',
     maximum_version => undef,
     version         => $VERSION,
 };
@@ -48,7 +48,6 @@ sub install() {
     my ( $self, $args ) = @_;
     $self->store_data( { opacenabled => 1, recordnumber => 10, interval => 1 } );
     $self->updateSQL();
-    return 1;
 }
 
 ## This method will be run just before the plugin files are deleted
@@ -73,19 +72,13 @@ sub configure() {
     my $cgi = $self->{'cgi'};
 
     unless ( $cgi->param('save') ) {
+	print 'first template';
         my $template = $self->get_template( { file => 'configure.tt' } );
 
         ## Grab the values we already have for our settings, if any exist
         $template->param( opacenabled => $self->retrieve_data('opacenabled'), recordnumber => $self->retrieve_data('recordnumber'), interval => $self->retrieve_data('interval'), last_configured_by => $self->retrieve_data('last_configured_by'), );
 
-        print $cgi->header(
-                {
-                -type     => 'text/html',
-                -charset  => 'UTF-8',
-                -encoding => "UTF-8"
-                }
-                );
-        print $template->output();
+	$self->output_html( $template->output() );
     }
 
     else {
@@ -103,7 +96,6 @@ sub configure() {
 	$self->updateSQL();
         $self->go_home();
     }
-    return 1;
 }
 
 sub intranet_js {
@@ -265,7 +257,6 @@ sub report {
 
     my $template = $self->get_template({ file => 'report.tt' });
 
-    print $cgi->header();
-    print $template->output();
+    $self->output_html( $template->output() );
 }
 1;
